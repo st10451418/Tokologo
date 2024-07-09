@@ -1,0 +1,247 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ */
+
+package com.mycompany.poeparat3;
+
+/**
+ *
+ * @author tokol
+ */
+import javax.swing.JOptionPane;
+
+
+public class POEPART3 {
+    // Declare these as class-level variables to be accessible across methods
+    private static String[] taskDevelopers;
+    private static String[] taskNames;
+    private static String[] taskIds;
+    private static String[] taskNumbers;
+    private static int[] taskDurations;
+    private static int[] taskStatuses;
+
+    public static void main(String[] args) {
+        boolean continueProgram = true;
+
+        while (continueProgram) {
+            int choice1 = JOptionPane.showOptionDialog(null, "Welcome to EasyKanban! Please select an option",
+                    "EasyKanban Menu", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+                    null, new String[]{"Add Task", "Show Report", "Search by Task Name", "Search by Developer", "Quit"}, "Add Task");
+
+            switch (choice1) {
+                case 0:
+                    addTasks();
+                    break;
+                case 1:
+                    showReport();
+                    break;
+                case 2:
+                    searchTaskByName();
+                    break;
+                case 3:
+                    searchTaskByDeveloper();
+                    break;
+                case 4:
+                    JOptionPane.showMessageDialog(null, "Exiting EasyKanban. Goodbye!");
+                    continueProgram = false;
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(null, "Invalid choice. Please try again.");
+                    break;
+            }
+        }
+    }
+
+    // Method to add tasks
+    private static void addTasks() {
+        int numTasks;
+        try {
+            numTasks = getNumberOfTasks();
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid number.");
+            return; // Return to main menu
+        }
+
+        // Initialize arrays based on number of tasks
+        taskDevelopers = new String[numTasks];
+        taskNames = new String[numTasks];
+        taskIds = new String[numTasks];
+        taskNumbers = new String[numTasks];
+        taskDurations = new int[numTasks];
+        taskStatuses = new int[numTasks];
+
+        for (int i = 0; i < numTasks; i++) {
+            String taskName = JOptionPane.showInputDialog(null, "Add login feature (task name):");
+            String taskDeveloperDetails = JOptionPane.showInputDialog(null, "Enter developer details (initials in caps):");
+            String taskNumber = generateTaskNumber(i + 1); // Adjusted to start from 1
+            String taskId = generateTaskId(taskName, taskDeveloperDetails);
+            int taskDuration = generateTaskDuration();
+            int taskStatus = getTaskStatus();
+
+            // Store task information in arrays
+            taskNames[i] = taskName;
+            taskNumbers[i] = taskNumber;
+            taskDevelopers[i] = taskDeveloperDetails;
+            taskIds[i] = taskId;
+            taskDurations[i] = taskDuration;
+            taskStatuses[i] = taskStatus;
+        }
+
+        // Display task information
+        displayTaskInformation(taskDevelopers, taskNames, taskNumbers, taskIds, taskDurations, taskStatuses);
+
+        // Finding and displaying the task with the longest duration
+        displayLongestTask(taskDevelopers, taskNames, taskNumbers, taskDurations);
+    }
+
+    // Method to display a report (placeholder)
+    private static void showReport() {
+        JOptionPane.showMessageDialog(null, "This feature is coming soon...");
+    }
+
+    // Method to search for tasks by task name
+    private static void searchTaskByName() {
+        if (taskNames == null) {
+            JOptionPane.showMessageDialog(null, "No tasks added yet.", "Task Search Results", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String searchName = JOptionPane.showInputDialog(null, "Enter the task name to search:");
+        boolean found = false;
+
+        StringBuilder searchResult = new StringBuilder("SEARCH RESULTS BY TASK NAME:\n");
+        searchResult.append(String.format("%-12s%-25s%-18s%-12s%-15s%s\n", "Task Num", "Task Name", "Developer", "ID", "Duration", "Status"));
+
+        for (int i = 0; i < taskNames.length; i++) {
+            if (taskNames[i].equalsIgnoreCase(searchName)) {
+                searchResult.append(String.format("%-20s%-30s%-20s%-12s%-15s%s\n", taskNumbers[i], taskNames[i], taskDevelopers[i], taskIds[i], taskDurations[i], getTaskStatusString(taskStatuses[i])));
+                found = true;
+            }
+        }
+
+        if (found) {
+            JOptionPane.showMessageDialog(null, "<html><pre>" + searchResult.toString() + "</pre></html>", "Task Search Results", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "No tasks found with the name: " + searchName, "Task Search Results", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    // Method to search for tasks by developer's information
+    private static void searchTaskByDeveloper() {
+        if (taskDevelopers == null) {
+            JOptionPane.showMessageDialog(null, "No tasks added yet.", "Task Search Results", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String searchDeveloper = JOptionPane.showInputDialog(null, "Enter the developer's information to search (initials in caps):");
+        boolean found = false;
+
+        StringBuilder searchResult = new StringBuilder("SEARCH RESULTS BY DEVELOPER:\n");
+        searchResult.append(String.format("%-12s%-25s%-18s%-12s%-15s%s\n", "Task Num", "Task Name", "Developer", "ID", "Duration", "Status"));
+
+        for (int i = 0; i < taskDevelopers.length; i++) {
+            if (taskDevelopers[i].equalsIgnoreCase(searchDeveloper)) {
+                searchResult.append(String.format("%-20s%-30s%-20s%-12s%-15s%s\n", taskNumbers[i], taskNames[i], taskDevelopers[i], taskIds[i], taskDurations[i], getTaskStatusString(taskStatuses[i])));
+                found = true;
+            }
+        }
+
+        if (found) {
+            JOptionPane.showMessageDialog(null, "<html><pre>" + searchResult.toString() + "</pre></html>", "Task Search Results", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "No tasks found for developer: " + searchDeveloper, "Task Search Results", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    // Method to get the number of tasks the user wishes to add
+    private static int getNumberOfTasks() {
+        return Integer.parseInt(JOptionPane.showInputDialog(null, "Enter the number of tasks you wish to add:"));
+    }
+
+    // Method to generate a task number based on index
+    private static String generateTaskNumber(int i) {
+        return String.format("%02d", i);
+    }
+
+    // Method to generate a task ID using task name and developer details
+    private static String generateTaskId(String taskName, String taskDeveloperDetails) {
+        String taskIdLeft = taskName.substring(0, 2).toUpperCase();
+        int taskIdMiddle = (int) (System.currentTimeMillis() % 10);
+        String taskIdRight = taskDeveloperDetails.substring(0, 2);
+        return taskIdLeft.toUpperCase() + ":" + taskIdMiddle + ":" + taskIdRight.toUpperCase();
+    }
+
+    // Method to generate and calculate the task duration from user input
+    private static int generateTaskDuration() {
+        int estimatedTime;
+        try {
+            estimatedTime = Integer.parseInt(JOptionPane.showInputDialog(null, "Enter your estimated time for this task in MINUTES:"));
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Invalid input. Please enter a valid number.");
+            estimatedTime = 0; // Default value if input is invalid
+        }
+        int addedTime = 15; // Additional time to task...
+        return estimatedTime + addedTime;
+    }
+
+    // Method to get the task status from user input
+    private static int getTaskStatus() {
+        String[] options = {"To Do", "Done", "Doing"};
+        return JOptionPane.showOptionDialog(null, "Select task status:", null, JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+    }
+
+    // Method to display task information in a formatted dialog
+    private static void displayTaskInformation(String[] taskDevelopers, String[] taskNames, String[] taskNumbers, String[] taskIds, int[] taskDurations, int[] taskStatuses) {
+        StringBuilder taskInfo = new StringBuilder("TASK ARRAYS:\n");
+        taskInfo.append(String.format("%-12s%-25s%-18s%-12s%-15s%s\n", "Task Num", "Task Name", "Developer", "ID", "Duration", "Status"));
+
+        for (int i = 0; i < taskNames.length; i++) {
+            taskInfo.append(String.format("%-20s%-30s%-20s%-12s%-15s%s\n", taskNumbers[i], taskNames[i], taskDevelopers[i], taskIds[i], taskDurations[i], getTaskStatusString(taskStatuses[i])));
+        }
+
+        JOptionPane.showMessageDialog(null, "<html><pre>" + taskInfo.toString() + "</pre></html>", "Task Information", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    // Method to convert task status integer to string representation
+    private static String getTaskStatusString(int status) {
+        switch (status) {
+            case 0:
+                return "To Do";
+            case 1:
+                return "Done";
+            case 2:
+                return "Doing";
+            default:
+                return "Unknown";
+        }
+    }
+
+    // Method to display the task with the longest duration
+    private static void displayLongestTask(String[] taskDevelopers, String[] taskNames, String[] taskNumbers, int[] taskDurations) {
+        int longestDuration = 0;
+        String longestDeveloper = "";
+        String longestTaskName = "";
+        String longestTaskNumber = "";
+
+        for (int i = 0; i < taskDurations.length; i++) {
+            if (taskDurations[i] > longestDuration) {
+                longestDuration = taskDurations[i];
+                longestDeveloper = taskDevelopers[i];
+                longestTaskName = taskNames[i];
+                longestTaskNumber = taskNumbers[i];
+            }
+        }
+
+        if (!longestDeveloper.isEmpty()) {
+            JOptionPane.showMessageDialog(null,
+                    "Task with Longest Duration:\n" +
+                            "Task Number: " + longestTaskNumber + "\n" +
+                            "Task Name: " + longestTaskName + "\n" +
+                            "Developer: " + longestDeveloper + "\n" +
+                            "Duration: " + longestDuration + " minutes",
+                    "Task with Longest Duration", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "No tasks found.", "Task with Longest Duration", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+}
